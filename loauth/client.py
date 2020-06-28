@@ -1,3 +1,5 @@
+import requests
+
 class Client:
 	def __init__(self, endpoint,  **kwargs):
 		self.endpoint = endpoint
@@ -7,3 +9,5 @@ class Client:
 	def __repr__(self):
 		print(self.__dict__)
 
+	def HTTP_get(url):
+		return requests.get(url)

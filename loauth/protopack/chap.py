@@ -5,7 +5,9 @@ from loauth.cijfer import HMAC
 from loauth.protopack.protocol import Protocol
 from loauth.client import Client 
 
-class CHAP_client(Client)
+class CHAP_client(Client):
+	def __init__(self):
+		pass
 
 
 class CHAP(Protocol):
