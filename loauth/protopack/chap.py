@@ -1,22 +1,48 @@
-import requests
 import hmac
-
+import requests
+from base64 import urlsafe_b64encode as be
 from loauth.cijfer import HMAC
-from loauth.protopack.protocol import Protocol
 from loauth.client import Client 
-
-class CHAP_client(Client):
-	def __init__(self):
-		pass
+from loauth.cijfer import Cijfer
 
 
-class CHAP(Protocol):
-	def trigger(self, endpoint):
-		ch = request.get(endpoint)
-		return ch
+
+def CHAP_Client(client):
+	'''Function To execute client side of the CHAP protocol
+	Parameters: <loauth.client Object> with class attributes
+		- endpoint <string>
+		- secret <string>
+		- sig_alg <loauth.cijfer.Cijfer Object>
+		- uuid <string>
+	Return Value: <requests.get() Object> Response object containing Auth Status	
+	'''
+
+	if not isinstance(client, Client):
+		raise TypeError
+	# make challenge request
+	a = requests.get(client.endpoint, params = {'uuid': client.uuid, 'op': 'get_challenge'})
+	print(a.text)
+	# generate response
+	print('Generating Response')
+	res = client.sig_alg.sign(client.secret.encode('utf-8'), a.text.encode('utf-8'))
+	ack = requests.get(client.endpoint, params = {'op': 'verify', 'payload': be(res)})
+	#print(ack.text)
+	#return ack
+
+
+def CHAP_Butler(query_args):
+	op = query_args['op'][0]
 	
-	def response(self, ch, key):
-		resp = hmac(ch, key, 'sha256') 
 		
-		
-		
+
+
+
+if __name__ == '__main__':
+	c = Client(endpoint = 'http://localhost:4000',
+				secret = 'ahaan',
+				uuid = 'ahaan',
+				sig_alg = HMAC('sha256'))	
+	print('Client Created')			
+	print(CHAP_Client(c))			
+	# Make a New Cijfer 
+	# Run Test
