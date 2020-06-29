@@ -1,4 +1,4 @@
-# loauth - Auhtentication Protocol Library
+# loauth - Authentication Protocol Library
 
 ### Development
 > Install Library in development mode using
