@@ -1,6 +1,7 @@
 import hmac
 import requests
 from base64 import urlsafe_b64encode as be
+from base64 import urlsafe_b64decode as bd
 from loauth.cijfer import HMAC
 from loauth.client import Client 
 from loauth.cijfer import Cijfer
@@ -25,21 +26,15 @@ def CHAP_Client(client):
 	# generate response
 	print('Generating Response')
 	res = client.sig_alg.sign(client.secret.encode('utf-8'), a.text.encode('utf-8'))
-	ack = requests.get(client.endpoint, params = {'op': 'verify', 'payload': be(res)})
+	ack = requests.get(client.endpoint, params = { 'uuid': client.uuid, 'op': 'verify', 'payload': be(res)})
 	#print(ack.text)
 	#return ack
-
-
-def CHAP_Butler(query_args):
-	op = query_args['op'][0]
-	
-		
 
 
 
 if __name__ == '__main__':
 	c = Client(endpoint = 'http://localhost:4000',
-				secret = 'ahaan',
+				secret = 'secret',
 				uuid = 'ahaan',
 				sig_alg = HMAC('sha256'))	
 	print('Client Created')			
