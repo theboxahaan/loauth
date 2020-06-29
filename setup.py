@@ -8,7 +8,7 @@ setuptools.setup(
 	version = "0.0.1",
 	author = "thebox",
 	author_email = "ahaandabholkar@gmail.com",
-	description = "An Authentication library",
+	description = "Authentication Library",
 	long_description = long_description,
 	long_description_content_type = "text/markdown",
 	url = "https://github.com/theboxahaan/loauth",

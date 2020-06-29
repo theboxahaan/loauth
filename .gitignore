@@ -1,5 +1,5 @@
 .DS_Store
-loauth.egg-info/
+*.egg-info/
 __pycache__/
 *.swp
 
