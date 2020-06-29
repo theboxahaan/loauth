@@ -1,5 +1,6 @@
 #from .cijfer import Cijfer, HMAC, Cijferpack
 #from .jwt import JWT
-import loauth.cijfer
-import loauth.jwt
-import loauth.protopack
+from . import cijfer
+from . import jwt
+from . import protopack
+from . import devbutler
