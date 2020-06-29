@@ -13,6 +13,7 @@ def CHAP_Client(client):
 		- endpoint <string>
 		- secret <string>
 		- sig_alg <loauth.cijfer.Cijfer Object>
+		- uuid <string>
 	Return Value: <requests.get() Object> Response object containing Auth Status	
 	'''
 
@@ -22,7 +23,9 @@ def CHAP_Client(client):
 		# make challenge request
 		a = requests.get(client.endpoint, params = {'uuid': client.uuid, 'op': 'get_challenge'})
 		# generate response
+		print('Generating Response')
 		res = client.sig_alg(client.secret.encode('utf-8'), a.text.encode('utf-8'))
+		print('Response Request')
 		ack = requests.get(client.endpoint, params = {'op': 'verify', 'payload': res})
 		print(ack.text)
 		return ack
@@ -38,7 +41,9 @@ def CHAP_butler():
 if __name__ == '__main__':
 	c = Client(endpoint = 'http://localhost:4000',
 				secret = 'ahaan',
+				uuid = 'ahaan',
 				sig_alg = HMAC('sha256'))	
+	print('Client Created')			
 	print(CHAP_Client(c))			
 	# Make a New Cijfer 
 	# Run Test
