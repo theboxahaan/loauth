@@ -25,7 +25,6 @@ def CHAP_Client(client):
 		# generate response
 		print('Generating Response')
 		res = client.sig_alg(client.secret.encode('utf-8'), a.text.encode('utf-8'))
-		print('Response Request')
 		ack = requests.get(client.endpoint, params = {'op': 'verify', 'payload': res})
 		print(ack.text)
 		return ack
