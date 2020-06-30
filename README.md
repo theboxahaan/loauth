@@ -8,7 +8,7 @@ Currently `loauth` only has support for a rudimentary *challenge-response* proto
 ### Development
 > Install package using `pip` in **development mode** using
 
-> ```bash (venv)$ pip install -e .```
+```bash (venv)$ pip install -e .```
 
 ### Setting Up The `devbutler` Development Server
 
