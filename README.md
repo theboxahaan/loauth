@@ -6,7 +6,7 @@ Currently `loauth` only has support for a rudimentary *challenge-response* proto
 **Guidelines** Modules can be tested on the provided `devbutler` module.
 
 ### Development
-> Install Library using `pip` in **development mode** using
+> Install package using `pip` in **development mode** using
 
 > ```bash (venv)$ pip install -e .```
 
