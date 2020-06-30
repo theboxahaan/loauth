@@ -23,5 +23,6 @@ This well setup the server to listen on `localhost:4000`. The `CHAP_Client` test
 $ python chap.py
 ```
 *Refer to the implementation for further details*
+
 *Follow the [PEP-8](https://www.python.org/dev/peps/pep-0008/) Guidelines as closely as possible*
 ___
