@@ -5,14 +5,10 @@ from urllib.parse import parse_qs
 
 def Factory(handler_method):
 	class FactoryGeneratedHandlerClass(http.server.BaseHTTPRequestHandler):
-		_session = {}
 		def __init__(self, *args, **kwargs):
-			self.__handler_method = handler_method
+			self._handler_method = handler_method
 			super().__init__(*args, **kwargs)
 		
-		def session_add(self, dic):
-			for x in dic:
-				self._session[x] = dic[x]
 
 		def do_GET(self):
 			self.send_response(200)
@@ -20,7 +16,7 @@ def Factory(handler_method):
 			self.end_headers()
 			query_args = parse_qs(urlparse(self.path).query)
 			print('Args Received: ', query_args)
-			response = self.__handler_method(query_args, self)
+			response = self._handler_method(query_args)
 			self.wfile.write(bytes(response, 'utf-8'))
 			return
 	return FactoryGeneratedHandlerClass
