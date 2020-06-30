@@ -1,8 +1,8 @@
 import json
 import re
 from base64 import urlsafe_b64encode, urlsafe_b64decode
-from exceptions import InvalidTokenError
-import cijfer
+from loauth import exceptions
+from loauth import cijfer
 
 class JWT:
 	
@@ -42,18 +42,18 @@ class JWT:
 
 	def Header(self, key):
 		if not self.verify(key):
-			raise InvalidTokenError("Invalid token signature")
+			raise exceptions.InvalidTokenError("Invalid token signature")
 
 		return urlsafe_b64decode(self.header + '===').decode("utf-8")
 
 	def Payload(self, key):
 		if not self.verify(key):
-			raise InvalidTokenError("Invalid token signature")
+			raise exceptions.InvalidTokenError("Invalid token signature")
 		return urlsafe_b64decode(self.payload + '===').decode("utf-8")
 
 	def HeaderAndPayload(self, key):
 		if not self.verify(key):
-			raise InvalidTokenError("Invalid token signature")
+			raise exceptions.InvalidTokenError("Invalid token signature")
 		return urlsafe_b64decode(self.header + '===').decode("utf-8"), urlsafe_b64decode(self.payload + '===').decode("utf-8")
 
 
