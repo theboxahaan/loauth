@@ -24,7 +24,9 @@ Initial documentation to help people get started. Setting up a `virtualenv` is h
 
 ## Extending the `protopack` 
 Currently `loauth` only has support for a rudimentary *challenge-response* protocol based on `SHA256` HMACs. Other modules for other protocols should be developed similar to this module. Each protocol should have a single `client` and `butler` function. 
+
 **Guidelines** Modules can be tested on the provided `devbutler` module.
+
 
 ### Development
 > Install package using `pip` in **development mode** using
