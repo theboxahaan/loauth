@@ -32,7 +32,7 @@ from random import Random
 
 
 
-
+# START
  
 user="killua@localhost"
 password="hello"
@@ -41,14 +41,30 @@ server="localhost"
 jid = JID(user) 
 connection = Client(server) 
 connection.connect()
+
+#END
+
+
+
 # print(connection.connected,"\n",connection.debug_flags,"\n",connection.disconnect_handlers,"\n",connection.defaultNamespace,"\n",connection.Namespace)
+
+#start
 result = connection.auth(jid.getNode(),password) 
+#end
+
+
+
 # print(result)
 # print(connection._owner,"\n",connection.__dict__,"\n",connection.__module__)
 # print(connection.send())
- 
-connection.sendInitPresence()
 
+#start 
+connection.sendInitPresence()
+#end
+
+
+
+#start
 def iq_handler(connection,iq):
 		"""Looks at every incoming Jabber iq stanza and handles them."""
 		# This creates an XML object out of the stanza, making it more
@@ -77,20 +93,33 @@ def iq_handler(connection,iq):
 
 connection.RegisterHandler("iq",iq_handler) 
 
+#end
+
+#start
 
 stanza = Element('iq', attrib={'type': 'get','from': user, 'to': "pubsub."+str(server),'id':'node1'})
 stanza.append(Element('query', attrib={'xmlns': 'http://jabber.org/protocol/disco#info'}))
 print(stanza.attrib.get("type"))
 a=simplexml.XML2Node(etree.tostring(stanza))
+print(a,"hello")
+
 print(a.getAttrs())
 print(a.getName())
+
+#end
 
 # print(etree.tostring(stanza),"\n")
 # Iq.__init__(typ=None, queryNS=None, attrs={}, to=None, frm=None, payload=[], xmlns='jabber:client', node=None)
 # node=Node('http://jabber.org/protocol/pubsub pubsub', attrs={},payload=[Node('items',attrs={"node":"princely_musings"},payload=[])])
 # print(node)
+
+
+#start
 iq=Iq('get',"http://jabber.org/protocol/pubsub",attrs={"id":"node2"},to="pubsub.localhost",frm="killua@localhost/manas-Inspiron-7570",payload=[Node('items',attrs={"node":"princely_musings"},payload=[])],xmlns=None)
 iq.setQuery("pubsub")
+#end
+
+
 # print(find('.//{http://jabber.org/protocol/disco#info}query'))
 
 
@@ -99,15 +128,23 @@ iq.setQuery("pubsub")
 # print(node)
 # print(connection.__dict__)
 
+#start
 connection.send(simplexml.XML2Node(etree.tostring(stanza)))
+# connection.send(stanza)
+#end
 
-# if connection.Process(1):
-#     pass
+if connection.Process(1):
+    pass
 
 # connection.send(simplexml.XML2Node(etree.tostring(stanza)))
 # # # print(connection.Process())
-# # connection.WaitForResponse("node1")
+connection.WaitForResponse("node1")
 # print(connection.Process())
+
+
+
+
+
 
     
 
