@@ -129,8 +129,8 @@ iq.setQuery("pubsub")
 # print(connection.__dict__)
 
 #start
-connection.send(simplexml.XML2Node(etree.tostring(stanza)))
-# connection.send(stanza)
+# connection.send(simplexml.XML2Node(etree.tostring(stanza)))
+connection.send(iq)
 #end
 
 if connection.Process(1):

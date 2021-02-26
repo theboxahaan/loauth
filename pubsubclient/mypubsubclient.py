@@ -168,11 +168,80 @@ class PubSubClient(object):
 						node_parent = Server(name=stanza.get('from'))
 					# Go through all of the 'item' elements in the stanza
 					for item in stanza.findall('.//{http://jabber.org/protocol/disco#items}item'):
-						reply.append(Node(name=item.get('node'), jid=item.get('jid'),
-						             server=Server(name=stanza.get('from')), parent=node_parent))
+						# reply.append(Node(name=item.get('node'), jid=item.get('jid'),
+						            #  server=Server(name=stanza.get('from')), parent=node_parent))
+						reply.append(item)
 				callback(reply)
 
 		self.send(contents, handler, return_function)	
+
+
+	def create_node(self, server, node, return_function=None, stanza_id=None):
+
+		contents = Element(
+		    'iq', attrib={'type': 'set', 'from': self.jid.jid, 'to': "pubsub."+str(server)})
+		q1 = SubElement(contents, 'pubsub', attrib={
+		                   'xmlns': 'http://jabber.org/protocol/pubsub'})
+
+		q2 = SubElement(q1,'create')
+
+		def handler(stanza, callback):
+
+			if callback is not None:
+				reply=[]
+				reply.append(stanza)
+
+				callback(reply)
+
+		self.send(contents, handler, return_function)	
+
+
+	
+	def publish(self, server, node, title, content, return_function=None, stanza_id=None):
+
+		entry=Element("entry")
+		title1=SubElement(entry,"title")
+		title1.text = title
+		content1 = SubElement(entry,"content")
+		content1.text = content
+		print(etree.tostring(entry))
+		
+		stanza = Element('iq', attrib={'type':'set', 'from':self.jid.jid, 'to':"pubsub."+str(server)})
+		pubsub = SubElement(stanza, 'pubsub', attrib={'xmlns':'http://jabber.org/protocol/pubsub'})
+		publish = SubElement(pubsub, 'publish', attrib={'node':str(node)})
+		item = SubElement(publish, 'item')		
+		item.append(entry)
+
+
+		def handler(stanza, callback):
+			# <iq type='result'
+			#    from='pubsub.shakespeare.lit'
+			#    to='hamlet@denmark.lit/blogbot'
+			#    id='publish1'>
+			#  <pubsub xmlns='http://jabber.org/protocol/pubsub'>
+			#    <publish node='princely_musings'>
+			#      <item id='ae890ac52d0df67ed7cfdf51b644e901'/>
+			#    </publish>
+			#  </pubsub>
+
+			# print (etree.tostring(stanza))
+			if callback is not None:
+				reply=[]
+				if stanza.get("type") == "result":
+					reply.append(stanza)
+					callback(reply)
+				else:
+					print("error in publishing")
+
+		self.send(stanza, handler, return_function)
+
+
+
+		
+
+
+
+
 
 
 
@@ -290,6 +359,6 @@ class Node(object):
 
 
 
-a=xmpp.JID("killua@localhost/xyz")
+# a=xmpp.JID("killua@localhost/xyz")
 
-print(a.getNode(),a.getDomain(),a.getResource(),"hello",a.getStripped())
+# print(a.getNode(),a.getDomain(),a.getResource(),"hello",a.getStripped())
