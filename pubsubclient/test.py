@@ -117,6 +117,7 @@ print(a.getName())
 #start
 iq=Iq('get',"http://jabber.org/protocol/pubsub",attrs={"id":"node2"},to="pubsub.localhost",frm="killua@localhost/manas-Inspiron-7570",payload=[Node('items',attrs={"node":"princely_musings"},payload=[])],xmlns=None)
 iq.setQuery("pubsub")
+print(iq)
 #end
 
 

@@ -35,7 +35,6 @@ class PubSubClient(object):
 		if connection_result != 'tls':
 			print("Warning: Could not use TLS")
 
-		# Then try to log in
 		authorisation_result = self.connection.auth(self.user,self.password,self.resource)
 		if not authorisation_result:
 			print("Could not get authorized. Username/password problem?")
@@ -43,13 +42,6 @@ class PubSubClient(object):
 		if authorisation_result != 'sasl':
 			print("Warning: Could not use SASL")
 
-		# Here we specify which methods to run to process messages and
-		# queries
-		# self.connection.RegisterHandler('message', self.message_handler)
-		
-		
-
-		# Tell the network we are online but don't ask for the roster
 		self.connection.sendInitPresence(1)
 
 		self.connection.RegisterHandler('iq', self.iq_handler)
@@ -59,26 +51,14 @@ class PubSubClient(object):
 
 	def iq_handler(self, connection, iq):
 		"""Looks at every incoming Jabber iq stanza and handles them."""
-		# This creates an XML object out of the stanza, making it more
-		# manageable
-		print("hello12")
-		# print(type(xmpp.simplexml.ustr(iq)),xmpp.simplexml.ustr(iq))
 		stanza = ElementTree(file=StringIO(xmpp.simplexml.ustr(iq)))
-		# Gets the top-level XML element of the stanza (the 'iq' one)
 		stanza_root = stanza.getroot()
 
 		print(etree.tostring(stanza),"\n",etree.tostring(stanza_root))
-
-		# See if there is a stanza id and if so whether it is in the
-		# dictionary of stanzas awaiting replies.
 		print(self.pending.keys(),stanza_root.get("id"))
 		if 'id' in stanza_root.attrib.keys() and stanza_root.get('id') in self.pending.keys():
-			# This stanza must be a reply, therefore run the function
-			# which is assigned to handle it
-			print("hello12")
 			self.pending[stanza_root.get('id')][0](
 			    stanza_root, self.callbacks[stanza_root.get('id')][0])
-			# These won't be run again, so collect the garbage
 			del(self.pending[stanza_root.get('id')])
 			del(self.callbacks[stanza_root.get('id')])
 
@@ -89,8 +69,6 @@ class PubSubClient(object):
 		random stanza id if it doesn't have one or if the current one
 		is not unique. Also assigns the optional functions
 		'reply_handler' and 'callback' to handle replies to this stanza."""
-		# Get the id of this stanza if it has one,
-		# or else make a new random one
 		if 'id' in stanza.attrib.keys() and stanza.get('id') not in self.used_ids:
 			id = stanza.get('id')
 		else:
@@ -236,18 +214,77 @@ class PubSubClient(object):
 		self.send(stanza, handler, return_function)
 
 
+	def get_items_from_a_node(self, server, node, return_function=None, stanza_id=None):
 
-		
+		stanza = Element("iq",attrib={"type":"get","from":self.jid.jid,"to":"pubsub."+str(server)})
+		pubsub = SubElement(stanza,"pubsub",attrib={"xmlns":"http://jabber.org/protocol/pubsub"})
+		items = SubElement(pubsub,"items",attrib={"node":str(node)})
+
+		def handler(stanza, callback):
+			if callback is not None:
+				reply=[]
+				if stanza.get("type") == "result":
+					for item in stanza.findall('.//item'):
+						reply.append(item)
+						callback(reply)
+				else:
+					print("error in retreiving items from a node")
+
+		self.send(stanza, handler, return_function)
+
+	def delete_node(self, server, node, return_function=None, stanza_id=None):
+
+		stanza = Element("iq",attrib={"type":"set","to":"pubsub."+str(server),"from":self.jid.jid})
+		pubsub = SubElement(stanza,"pubsub",attrib={"xmlns":"http://jabber.org/protocol/pubsub#owner"})
+		delete = SubElement(pubsub,"delete",attrib={"node":str(node)})
+
+		def handler(stanza, callback):
+			if callback is not None:
+				reply=[]
+				if stanza.get("type") == "result":
+					reply.append(stanza)
+					callback(reply)
+				else:
+					print("error in deleting node")
+
+		self.send(stanza, handler, return_function)
 
 
+	def delete_item_from_a_node(self,server,node,item_id,return_function=None,stanza_id=None):
 
+		stanza = Element("iq",attrib={"type":"set","from":self.jid.jid,"to":"pubsub."+str(server)})
+		pubsub = SubElement(stanza,"pubsub",attrib={"xmlns":"http://jabber.org/protocol/pubsub"})
+		retract = SubElement(pubsub,"retract",attrib={"node":str(node)})
+		item = SubElement(retract,"item",attrib={"id":str(item_id)})
 
+		def handler(stanza, callback):
+			if callback is not None:
+				reply=[]
+				if stanza.get("type") == "result":
+					reply.append(stanza)
+					callback(reply)
+				else:
+					print("error in deleting node")
 
+		self.send(stanza, handler, return_function)
 
+	
+	def subscribe(self,server,node,return_function=None,stanza_id=None):
 
+		stanza = Element("iq",attrib={"type":"set","from":self.jid.jid,"to":"pubsub."+str(server)})
+		pubsub = SubElement(stanza,"pubsub",attrib={"xmlns":"http://jabber.org/protocol/pubsub"})
+		subscribe = SubElement(pubsub,"subscribe",attrib={"node":str(node),"jid":str(self.jid.jid)})
 
+		def handler(stanza, callback):
+			if callback is not None:
+				reply=[]
+				if stanza.get("type") == "result":
+					reply.append(stanza)
+					callback(reply)
+				else:
+					print("error in deleting node")
 
-
+		self.send(stanza, handler, return_function)
 
 
 class JID:
@@ -278,87 +315,3 @@ class Server(object):
 
 	def add_node(self, client, name, callback=None):
 		client.request_node(self, name, None, None, return_function=callback)
-
-class Node(object):
-	"""Pointer to a PubSub Node."""
-
-	def __init__(self, server=None, name=None, jid=None, type=None, parent=None):
-		self.set_server(server)
-		self.set_name(name)
-		self.set_jid(jid)
-		self.set_type(type)
-		self.set_parent(parent)
-
-	def __str__(self):
-		return self.name
-
-	def set_server(self, server):
-		"""Sets the server which this Node object points to (does NOT
-		edit any actual nodes, only this pointer!)"""
-		if type(server) == type("string"):
-			self.server = Server(server)
-		elif type(server) == type(Server()):
-			self.server = server
-		else:
-			print ("Error: server must be a string or a Server.")
-
-	def set_name(self, name):
-		"""Sets the node name which this Node object points to (does NOT
-		edit any actual nodes, only this pointer!)"""
-		self.name = str(name)
-
-	def set_jid(self, jid):
-		self.jid = jid
-
-	def set_type(self, type):
-		"""Sets the type of this Node object. Does not edit the actual
-		node."""
-		self.type = type
-
-	def set_parent(self, parent):
-		"""Sets the parent collection node of this Node object. Does
-		not edit the actual node."""
-		self.parent = parent
-
-	def get_sub_nodes(self, client, callback=None):
-		"""Queries this node for its children. Passes a list of Nodes
-		it finds to the return_function when a reply is received."""
-		client.get_nodes(self.server, self, return_function=callback)
-
-	def get_items(self, client, callback=None):
-		"""TODO: Queries this node for the items it contains. Returns a list
-		of the strings contained in the items."""
-		client.get_items(self.server, self.name, return_function=callback)
-
-	def get_information(self, client, callback=None):
-		client.get_node_information(self.server, self, return_function=callback)
-
-	def make_sub_node(self, client, name, type, callback=None):
-		if self.type is "leaf":
-			raise TypeError('Leaf nodes cannot contain child nodes')
-		else:
-			if self.type is None:
-				print ("Warning: Node type is not known, yet child node requested. This will fail for leaf nodes.")
-			if type == 'leaf':
-				client.get_new_leaf_node()
-			elif type == 'collection':
-				client.get_new_collection_node()
-
-	def request_all_affiliated_entities(self, client, return_function=None):
-		client.request_all_affiliated_entities(self.server, self, return_function)
-
-	def modify_affiliations(self, client, affiliation_dictionary, return_function=None):
-		client.modify_affiliation(self.server, self, affiliation_dictionary, return_function)
-
-	def publish(self, client, body, id=None, return_function=None):
-		client.publish(self.server, self, body, id, None, return_function)
-
-	def subscribe(self, client, jid, return_function=None):
-		client.subscribe(self.server, self, jid, return_function)
-
-
-
-
-# a=xmpp.JID("killua@localhost/xyz")
-
-# print(a.getNode(),a.getDomain(),a.getResource(),"hello",a.getStripped())

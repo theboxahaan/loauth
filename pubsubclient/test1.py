@@ -19,6 +19,13 @@ client.connect()
 
 #After Publishing to check the item published in node princely musing run python test.py
 
+# client.get_items_from_a_node(client.server, "princely_musings", callback)
+
+# client.delete_node(client.server,"e464ea8d-7237-4ece-8aac-2186561571f2",callback)
+
+# client.delete_item_from_a_node(client.server,"princely_musings","e92c6ec3-f2b7-4046-87ad-0cba933146fa")
+
+# client.subscribe(client.server,"princely_musings",callback)
 
 
 
