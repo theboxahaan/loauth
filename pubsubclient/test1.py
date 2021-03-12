@@ -1,15 +1,22 @@
 from mypubsubclient import *
+import time
 
 def callback(reply):
     print("hello Sj")
     # print(reply[0].__dict__)
     for stanza in reply:
         print(etree.tostring(stanza),"\n")
+    print(time.time()-start_time,time.time(),start_time,"Hello5")
 
 client = PubSubClient("killua@localhost","hello")
 client.connect()
 
-# client.get_nodes(client.server,None,callback)
+start_time=time.time()
+print(start_time)
+client.get_nodes(start_time,client.server,None,callback)
+import traceback
+print(traceback.format_exc())
+print(time.time(),start_time,time.time()-start_time)
 
 # client.create_node(client.server,None,callback)
 
@@ -29,3 +36,5 @@ client.connect()
 
 
 
+# HTTP 10 requests GET  / 1.89 secs
+# XMPP 10 requests get_nodes 18 secs

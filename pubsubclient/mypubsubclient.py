@@ -5,6 +5,7 @@ from io import StringIO
 from lxml.etree import ElementTree, Element, SubElement
 import lxml.etree as etree
 from xmpp.simplexml import *
+import time
 
 
 
@@ -19,7 +20,7 @@ class PubSubClient(object):
 		self.resource=self.jid.resource
 		self.user = self.jid.node
 		self.server = self.jid.domain
-		self.connection = xmpp.Client(self.server)
+		self.connection = xmpp.Client(self.server,debug=[])
 		# This stores the stanza ids used for this session, since ids
 		# must be unique for their session
 		self.callbacks = {}
@@ -53,8 +54,9 @@ class PubSubClient(object):
 		"""Looks at every incoming Jabber iq stanza and handles them."""
 		stanza = ElementTree(file=StringIO(xmpp.simplexml.ustr(iq)))
 		stanza_root = stanza.getroot()
+		
 
-		print(etree.tostring(stanza),"\n",etree.tostring(stanza_root))
+		print(etree.tostring(stanza),"\n",etree.tostring(stanza_root),"\n",len(etree.tostring(stanza)))
 		print(self.pending.keys(),stanza_root.get("id"))
 		if 'id' in stanza_root.attrib.keys() and stanza_root.get('id') in self.pending.keys():
 			self.pending[stanza_root.get('id')][0](
@@ -64,7 +66,7 @@ class PubSubClient(object):
 
 	
 	
-	def send(self, stanza, reply_handler=None, callback=None):
+	def send(self,start_time,stanza, reply_handler=None, callback=None):
 		"""Sends the given stanza through the connection, giving it a
 		random stanza id if it doesn't have one or if the current one
 		is not unique. Also assigns the optional functions
@@ -85,6 +87,7 @@ class PubSubClient(object):
 		# self.connection.WaitForResponse(id)
 		# while self.connection.Process(1): 
 		# 	pass
+		print(time.time()-start_time,"Hello2")
 		self.connection.SendAndWaitForResponse(xmpp.simplexml.XML2Node(etree.tostring(stanza)),2)
 		# self.connection.SendAndWaitForResponse(xmpp.simplexml.XML2Node(etree.tostring(stanza)),2)
 
@@ -95,7 +98,7 @@ class PubSubClient(object):
 
 
 	#Retrieve all top level nodes
-	def get_nodes(self, server, node, return_function=None, stanza_id=None):
+	def get_nodes(self,start_time, server, node, return_function=None, stanza_id=None):
 		"""Queries server (string or Server) for the top-level nodes it
 		contains. If node is a string or Node then its child nodes are
 		requested instead.
@@ -113,6 +116,9 @@ class PubSubClient(object):
 		                   'xmlns': 'http://jabber.org/protocol/disco#items'})
 		if node is not None:
 			query.set('node', node.name)
+
+		print(time.time()-start_time,"hello")
+		
 
 		# This is run on any replies that are received (identified by
 		# their stanza id)
@@ -133,6 +139,7 @@ class PubSubClient(object):
 			#          node='moorish_meanderings'/>
 			#  </query>
 			# </iq>
+			print(time.time()-start_time,"Hello3")
 			if callback is not None:
 				# reply = Element('reply')
 				reply = []
@@ -149,9 +156,10 @@ class PubSubClient(object):
 						# reply.append(Node(name=item.get('node'), jid=item.get('jid'),
 						            #  server=Server(name=stanza.get('from')), parent=node_parent))
 						reply.append(item)
+				print(time.time()-start_time,"Hello4")
 				callback(reply)
 
-		self.send(contents, handler, return_function)	
+		self.send(start_time,contents, handler, return_function)	
 
 
 	def create_node(self, server, node, return_function=None, stanza_id=None):
@@ -285,6 +293,22 @@ class PubSubClient(object):
 					print("error in deleting node")
 
 		self.send(stanza, handler, return_function)
+
+	def get_roster(self,server,node,return_function=None,stanza_id=None):
+
+		stanza=Element("iq",attrib={"type":"get"})
+		query=SubElement(stanza,"query",attrib={"xmlns":"jabber:iq:roster"})
+
+		def handler(stanza,callback):
+			if callback is not None:
+				reply=[]
+				if stanza.get("type")=="result":
+					reply.append(stanza)
+					callback(reply)
+				else:
+					print("error in getting roster")
+		
+		self.send(stanza,handler,return_function)
 
 
 class JID:
