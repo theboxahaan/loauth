@@ -2,4 +2,6 @@
 *.egg-info/
 __pycache__/
 *.swp
+**/build/
+*.dSYM
 
