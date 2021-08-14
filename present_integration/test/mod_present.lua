@@ -85,7 +85,7 @@ module:hook("stanza/http://jabber.org/protocol/startpresent:startpresent", funct
 	
 	local session, stanza = event.origin, event.stanza;
 	local method = stanza:get_child_text("method");
-	session.log("debug", "hello bitches%s", tostring(method));
+	session.log("debug", "hello %s", tostring(method));
 	
 	if session.type == "c2s"  then
 		
