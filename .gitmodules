@@ -1,0 +1,3 @@
+[submodule "prosody"]
+	path = prosody
+	url = https://github.com/mnswdhw/prosody.git
