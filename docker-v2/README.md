@@ -24,7 +24,9 @@ Currently implements `SASL` using `SCRAM-SHA-1`
 $ python dummy.py
 ```
 It should print out a **success** message
-
+```
+b"<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>dj1od2dlUk5ESGg4ckswNEJNRU91TVZIdzl1RjA9</success>"
+```
 
 -----------------
 
