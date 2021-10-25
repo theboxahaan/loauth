@@ -145,7 +145,7 @@ uint64_t* generateSubkeys(char* key)
     return subKeys;
 }
 
-char* encrypt(char* plaintext, char* key)
+char* present_encrypt(char* plaintext, char* key)
 {
     uint64_t* subkeys = generateSubkeys(key);
     uint64_t state = fromHexStringToLong(plaintext);
@@ -167,7 +167,7 @@ char* encrypt(char* plaintext, char* key)
     return fromLongToHexString(state);
 }
 
-char* decrypt(char* ciphertext, char* key)
+char* present_decrypt(char* ciphertext, char* key)
 {
     uint64_t* subkeys = generateSubkeys(key);
     uint64_t state = fromHexStringToLong(ciphertext);
@@ -335,7 +335,7 @@ char* presentCBCencr(char* text, char* key)
             xor_byte_arrays(hexCtextBlocks[i-1], hexPtextBlocks[i], tempStore);
 
         char* temp;
-        temp = encrypt(tempStore, hexKey);
+        temp = present_encrypt(tempStore, hexKey);
         sprintf(hexCtextBlocks[i], "%s", temp);
     }
 
@@ -395,7 +395,7 @@ char* presentCBCdecr(char* ctext, char* key)
         char tempStore[BLOCK_SIZE+1];
         char plainStore[BLOCK_SIZE+1];
         char* temp;
-        temp = decrypt(hexCtextBlocks[i], hexKey);
+        temp = present_decrypt(hexCtextBlocks[i], hexKey);
         sprintf(tempStore, "%s", temp);
 
         if (i == 0) 

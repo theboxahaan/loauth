@@ -65,23 +65,24 @@ int sin_size;
 char* clientnonce;
 char* serversignature;
 
-void DecodeXML(void);
+void DecodeXML();
 static void XML_Parse(xmlNode*);
 
-int Connect_TCP_Sock(void);
-void TCP_Init_Stream_Header(void);
+int Connect_TCP_Sock();
+void TCP_Init_Stream_Header();
 void TCP_SendTo(char *msg);
-void TCP_GetIn(void);
+void TCP_GetIn();
 
 void Init_Auth(char*, char*);
-void Auth_Responce(char*, char*, char*, char*);
+void Auth_Response(char*, char*, char*, char*);
 
-void Bind(void);
+void Bind();
 
-void Start_PRESENT(void);
-void PRE_Init_Stream_Header(void);
-void PRE_SendTo(void);
-void PRE_GetIn(void);
+void Start_PRESENT();
+void PRE_Init_Stream_Header();
+void PRE_SendTo();
+void PRE_GetIn();
+void PRE_presence();
 
 // void SASL_Session(void);
 // void SASL_Roster(void);

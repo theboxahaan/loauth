@@ -1,5 +1,7 @@
--- Prosody Example Configuration File
----- Information on configuring Prosody can be found on our
+daemonize = false;
+-- Prosody XMPP Server Configuration
+--
+-- Information on configuring Prosody can be found on our
 -- website at https://prosody.im/doc/configure
 --
 -- Tip: You can check that the syntax of this file is correct
@@ -8,8 +10,7 @@
 -- If there are any errors, it will let you know what and where
 -- they are, otherwise it will keep quiet.
 --
--- The only thing left to do is rename this file to remove the .dist ending, and fill in the
--- blanks. Good luck, and happy Jabbering!
+-- Good luck, and happy Jabbering!
 
 
 ---------- Server-wide settings ----------
@@ -20,9 +21,7 @@
 -- for the server. Note that you must create the accounts separately
 -- (see https://prosody.im/doc/creating_accounts for info)
 -- Example: admins = { "user1@example.com", "user2@example.net" }
---admins = {"pp@192.168.1.14"}
-admins = {"pp@localhost"} 
-
+admins = { "admin@localhost" }
 
 -- Enable use of libevent for better performance under high load
 -- For more information see: https://prosody.im/doc/libevent
@@ -31,9 +30,7 @@ admins = {"pp@localhost"}
 -- Prosody will always look in its source directory for modules, but
 -- this option allows you to specify additional locations where Prosody
 -- will look for modules first. For community modules, see https://modules.prosody.im/
--- For a local administrator it's common to place local modifications
--- under /usr/local/ hierarchy:
-plugin_paths = { "/usr/local/lib/prosody/modules" }
+--plugin_paths = {}
 
 -- This is the list of modules Prosody will load on startup.
 -- It looks for mod_modulename.lua in the plugins folder, so make sure that exists too.
@@ -75,7 +72,6 @@ modules_enabled = {
 		--"http_files"; -- Serve static files from a directory over HTTP
 
 	-- Other specific functionality
-		"posix"; -- POSIX functionality, sends server to background, enables syslog, etc.
 		--"groups"; -- Shared roster support
 		--"server_contact_info"; -- Publish contact information for this service
 		--"announce"; -- Send announcement to all online users
@@ -92,32 +88,22 @@ modules_disabled = {
 	-- "offline"; -- Store offline messages
 	-- "c2s"; -- Handle client connections
 	-- "s2s"; -- Handle server-to-server connections
+	-- "posix"; -- POSIX functionality, sends server to background, enables syslog, etc.
 }
 
 -- Disable account creation by default, for security
 -- For more information see https://prosody.im/doc/creating_accounts
 allow_registration = false
 
--- Debian:
---   Do not send the server to background, either systemd or start-stop-daemon take care of that.
---
-daemonize = false;
-
--- Debian:
---   Please, don't change this option since /run/prosody/
---   is one of the few directories Prosody is allowed to write to
---
-pidfile = "/run/prosody/prosody.pid";
-
 -- Force clients to use encrypted connections? This option will
 -- prevent clients from authenticating unless they are using encryption.
 
-c2s_require_encryption  = false 
+c2s_require_encryption = false 
 
 -- Force servers to use encrypted connections? This option will
 -- prevent servers from authenticating unless they are using encryption.
 
-s2s_require_encryption = false
+s2s_require_encryption = true
 
 -- Force certificate authentication for server-to-server connections?
 
@@ -146,6 +132,9 @@ limits = {
   };
 }
 
+-- Required for init scripts and prosodyctl
+pidfile = "/var/run/prosody/prosody.pid"
+
 -- Select the authentication backend to use. The 'internal' providers
 -- use Prosody's configured data storage to store the authentication data.
 
@@ -156,8 +145,7 @@ authentication = "internal_hashed"
 -- through modules. An "sql" backend is included by default, but requires
 -- additional dependencies. See https://prosody.im/doc/storage for more info.
 
---storage = "sql" -- Default is "internal" (Debian: "sql" requires one of the
--- lua-dbi-sqlite3, lua-dbi-mysql or lua-dbi-postgresql packages to work)
+--storage = "sql" -- Default is "internal"
 
 -- For the "sql" backend, you can uncomment *one* of the below to configure:
 --sql = { driver = "SQLite3", database = "prosody.sqlite" } -- Default. 'database' is the filename.
@@ -178,26 +166,9 @@ archive_expires_after = "1w" -- Remove archived messages after 1 week
 
 -- Logging configuration
 -- For advanced logging see https://prosody.im/doc/logging
---
--- Debian:
---  Logs info and higher to /var/log
---  Logs errors to syslog also
---log = {
-	-- Log files (change 'info' to 'debug' for debug logs):
-	--info = "/var/log/prosody/prosody.log";
-	--error = "/var/log/prosody/prosody.err";	
-	-- Syslog:
---	{ levels = { "error" }; to = "syslog";  };
---}
-
 log = {
-	debug = "/var/log/prosody/prosody1.log";
-	error = "/var/log/prosody/prosody1.err";
-	-- Syslog:
-	{ levels = {"debug","info","warning","error"}; to = "console"; };
-
+    {levels = {min = "debug"}, to = "console"};
 }
-
 
 -- Uncomment to enable statistics
 -- For more info see https://prosody.im/doc/statistics
@@ -219,22 +190,10 @@ certificates = "certs"
 ----------- Virtual hosts -----------
 -- You need to add a VirtualHost entry for each domain you wish Prosody to serve.
 -- Settings under each VirtualHost entry apply *only* to that host.
--- It's customary to maintain VirtualHost entries in separate config files
--- under /etc/prosody/conf.d/ directory. Examples of such config files can
--- be found in /etc/prosody/conf.avail/ directory.
 
------- Additional config files ------
--- For organizational purposes you may prefer to add VirtualHost and
--- Component definitions in their own config files. This line includes
--- all config files in /etc/prosody/conf.d/
-
---VirtualHost "localhost"
--- VirtualHost "192.168.1.14"
---	Component "pubsub.192.168.1.14" "pubsub"
-	
-	
 VirtualHost "localhost"
-	Component "pubsub.localhost" "pubsub"
+	key = "/etc/prosody/certs/localhost.key";
+	certificate = "/etc/prosody/certs/localhost.crt";
 
 --VirtualHost "example.com"
 --	certificate = "/path/to/example.crt"
@@ -257,4 +216,3 @@ VirtualHost "localhost"
 --
 --Component "gateway.example.com"
 --	component_secret = "password"
-Include "conf.d/*.cfg.lua"
