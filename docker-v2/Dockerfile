@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y \
 	libxml2-dev \
 	gcc \
 	telnet \
-	lua5.2-dev
+	lua5.2-dev \
+	luarocks
 RUN chmod 666 /etc/prosody/certs/localhost.key && chmod 666 /etc/prosody/certs/localhost.crt
-
+RUN prosodyctl register admin localhost 123
+#RUN luarocks install inspect

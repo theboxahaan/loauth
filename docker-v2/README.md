@@ -4,6 +4,8 @@ $ cd <loauth-root>
 $ docker run --rm --name prosody -v $(pwd)/docker-v2/:/etc/prosody/:ro -p 5222:5222 -p 5582:5582 loauth/prosody
 ```
 --------------
+> **This step is not required to be done explicitly.
+> `prosodyctl` does this in the `Dockerfile`**
 
 ### Add user `admin@localhost` to the server
 ```bash
