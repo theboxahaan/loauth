@@ -1,3 +1,9 @@
+## Build container
+```bash
+$ cd <loauth-root/docker-v2>
+$ docker build --tag loauth/prosody:latest --no-cache .
+```
+
 ## Deploy `docker-v2` container
 ```bash
 $ cd <loauth-root>
