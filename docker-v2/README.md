@@ -1,7 +1,7 @@
 ## Deploy `docker-v2` container
 ```bash
 $ cd <loauth-root>
-$ docker run --rm --name prosody -v $(pwd)/docker-v2/:/etc/prosody/:ro -p 5222:5222 -p 5582:5582 loauth/prosody
+$ docker run --rm --name prosody -v $(pwd)/docker-v2/:/etc/prosody/:ro -v $(pwd)/docker-v2/libnativefunc.so:/usr/lib/prosody/util/libnativefunc.so -v $(pwd)/docker-v2/mod_pls.lua:/usr/lib/prosody/modules/mod_pls.lua -p 5222:5222 -p 5582:5582 loauth/prosody
 ```
 --------------
 
