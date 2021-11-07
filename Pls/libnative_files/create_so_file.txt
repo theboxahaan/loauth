@@ -1,0 +1,6 @@
+sudo apt-get install lua5.2-dev
+
+gcc -fPIC -o libnativefunc.o -c libnativefunc.c -I/usr/include/lua5.2
+
+gcc libnativefunc.o -shared -o libnativefunc.so
+
