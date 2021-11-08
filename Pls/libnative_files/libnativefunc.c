@@ -4,13 +4,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-//#include "/home/manas/Desktop/projects/deliverables/Present-8bit/present_try.h"
+
 
 #define ROUNDS               32
 #define ROUND_KEY_SIZE_BYTES  8
 #define PRESENT_80_KEY_SIZE_BYTES 10
 #define PRESENT_128_KEY_SIZE_BYTES 16
 #define PRESENT_BLOCK_SIZE_BYTES 8
+
+// Function Definitions
 
 void present80_encryptBlock( unsigned char *block, const unsigned char *key );
 void present80_decryptBlock( unsigned char *block, const unsigned char *key );
@@ -257,11 +259,6 @@ void present128CBC_decrypt( unsigned char *message, const unsigned int messageLe
 
 
 
-
-
-
-
-
 static int encrypt_lua(lua_State *L)
 {
 	//call the encrypt function 
@@ -269,23 +266,11 @@ static int encrypt_lua(lua_State *L)
 	const char *plaintext = luaL_checkstring(L, 1);
 	const char *key = luaL_checkstring(L, 2);
 	
-	
 	unsigned char mess[2*strlen(plaintext) + 1];
-
     strncpy(mess, plaintext, sizeof mess);
-	
-	// for (int i=0;i<strlen(plaintext);i++){
-	
-	// mess[i] = plaintext[i];
-	// }
-
-    //printf("%s",mess);
-	
 	present80CBC_encrypt( mess, strlen(mess), key80, iv );
-	
 	const char *encrypted_text = mess;
 
-    //printf("%s",encrypted_text);
 	lua_pushstring(L,encrypted_text);
 
     return 1;
@@ -293,32 +278,14 @@ static int encrypt_lua(lua_State *L)
 
 static int decrypt_lua(lua_State *L)
 {
-	//call the decrypt function 
 
-	//(encrypted_text,key) as params
 	const char *encrypted_text = luaL_checkstring(L, 1);
-	//printf("%s", encrypted_text);
-	const char *key = luaL_checkstring(L, 2);
-	
-	//printf("%d",strlen(encrypted_text));
-	
-	
+	const char *key = luaL_checkstring(L, 2)
 	unsigned char mess[2*strlen(encrypted_text)+1];
-	
-	// for (int i=0;i<strlen(encrypted_text);i++){
-	
-	//   mess[i] = encrypted_text[i];
-	// }
 
     strncpy(mess, encrypted_text, sizeof mess);
-   // mess[sizeof mess - 1] = '\0';
-
-    //printf("%s\n",mess);
 	present80CBC_decrypt( mess, strlen(mess), key80, iv );
 	const char *decrypted_text = mess;
-
-    //printMessage(mess);
-
 	lua_pushstring(L,decrypted_text);
 
     return 1;
@@ -332,21 +299,11 @@ static int test_print(lua_State *L)
 	const char *print_text = luaL_checkstring(L, 1);
 	printf("\n%s", print_text);
 	
-	
 	return 0;
 
 
 
 }
-
-
-/*
- static const luaL_Reg libnativefunc[] = {
-     {"encrypt_bytes", encrypt_lua},
-     {"decrypt_bytes", decrypt_lua},
-     {NULL, NULL},
- };
-*/
 
 
 static const luaL_Reg nativeFuncLib [] =
@@ -361,25 +318,9 @@ static const luaL_Reg nativeFuncLib [] =
 LUALIB_API int luaopen_util_libnativefunc(lua_State *L)
 {
 
-
-
-
-    //luaL_register(L, "libnativefunc", nativeFuncLib);
-    
-    
-    //#ifdef lua5.1
-//Use luaL_register directly under 5.1
-    //luaL_register (L, "libnativefunc", nativeFuncLib);
-    //#else//lua5.2
     lua_newtable (L); 
     luaL_setfuncs(L, nativeFuncLib, 0);
-   //First press a table into VS, and then call luaL_setfuncs will save all func to the table
-   //Note that unlike luaL_register this table is an unnamed table, you can use it with only one variable to store it in this table.
-   //eg local clib = require "libname". This will not pollute the global environment. Better than luaL_register.
-    //luaL_setfuncs (L, nativeFuncLib, 0);
-    //#endif
-    //lua_pushliteral(L, "libnativefunc");
+
     return 1;//Return table
-//    luaL_newlib(L, libnativefunc);
-    //return 1;
+
 }
