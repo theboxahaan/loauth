@@ -80,13 +80,25 @@ if __name__ == '__main__':
 		# and focus on getting SASL to work
 		# s.sendall(b'<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>')
 		# print(s.recv(2048))
-
+		s.sendall(b'<startpls xmlns="urn:ietf:params:xml:ns:xmpp-pls"/>')
+		print(s.recv(2048))
+		q = b"<stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' xml:lang='en' version='1.0' to='localhost'>"
+		from present import PRESENT_CBC
+		obj = PRESENT_CBC(b'12341234', b'abcdefghij')
+		cipher = obj.encrypt(q)
+		print(cipher)
+		s.sendall(b"".join(cipher))
+		resp = s.recv(2048)
+		_r = b"".join(obj.decrypt(resp))
+		import binascii
+		# s.recv(2048)
 		# SASL Layer
 		sasl = SCRAM_SHA1(user="admin", pwd="123")
 		# send first message 
 		client_first_msg = f'<auth mechanism="SCRAM-SHA-1" xmlns="urn:ietf:params:xml:ns:xmpp-sasl">{be(sasl.client_first_message().encode()).decode()}</auth>'
-		s.sendall(client_first_msg.encode())
+		s.sendall(obj.encrypt(client_first_msg.encode()))
 		# receive first server message
+		print(s.recv(2048))
 		import xml.etree.ElementTree as ET
 		first_server_msg = s.recv(2048)
 		resp_root = ET.fromstring(first_server_msg.decode())
