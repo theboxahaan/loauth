@@ -209,7 +209,8 @@ def string2number(i):
     Input: string (big-endian)
     Output: long or integer
     """
-    return int(i.hex(),16)
+    #return int(i.hex(),16)
+    return int.from_bytes(i, 'big')
 
 def number2string_N(i, N):
     """Convert a number to a string of fixed size

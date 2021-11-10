@@ -9,6 +9,8 @@
 local create_context = require "core.certmanager".create_context;
 local rawgetopt = require"core.configmanager".rawget;
 local st = require "util.stanza";
+local add_filter = require "util.filters".add_filter;
+local presentlib = require "util.libnativefunc";
 
 local c2s_require_encryption = module:get_option("c2s_require_encryption", module:get_option("require_encryption"));
 local s2s_require_encryption = module:get_option("s2s_require_encryption");
@@ -30,27 +32,78 @@ local s2s_feature = st.stanza("starttls", starttls_attr);
 if c2s_require_encryption then c2s_feature:tag("required"):up(); end
 if s2s_require_encryption then s2s_feature:tag("required"):up(); end
 
--- [MOD]adding startpls to support the PRESENT layer
-
-local xmlns_startpls = 'urn:ietf:params:xml:ns:xmpp-pls';
-local startpls_attr = { xmlns = xmlns_startpls };
-local startpls_initiate= st.stanza("startpls", startpls_attr);
-local startpls_proceed = st.stanza("proceed", startpls_attr);
-local startpls_failure = st.stanza("failure", startpls_attr);
-local c2s_feature_pl = st.stanza("startpls", startpls_attr);
-local s2s_feature_pl = st.stanza("startpls", startpls_attr);
-if c2s_require_encryption then c2s_feature_pl:tag("required"):up(); end
-if s2s_require_encryption then s2s_feature_pl:tag("required"):up(); end
-
-
-
 local hosts = prosody.hosts;
 local host = hosts[module.host];
 
 local ssl_ctx_c2s, ssl_ctx_s2sout, ssl_ctx_s2sin;
 local ssl_cfg_c2s, ssl_cfg_s2sout, ssl_cfg_s2sin;
 
-function module.load(reload)
+
+
+local function main_decrypt(data,session)
+	if data == nil then
+		return data;
+	end
+	
+	session.log("debug", "inside the main_decrypt incoming data : %s", tostring(data));
+	local decrypted_text = presentlib.decrypt_bytes(data,"abcdefghij");
+	session.log("debug", "inside the main_decrypt decrypted :%s", tostring(decrypted_text));
+	--decrypted_text = unescape(decrypted_text)
+	
+	return decrypted_text;
+
+
+end
+
+
+local function main_encrypt(data,session)
+	if data == nil then
+		return data;
+	end
+	
+	session.log("debug", "inside the main_encrypt outgoing data : %s", tostring(data));
+	local encrypted_text = presentlib.encrypt_bytes(data,"abcdefghij");
+	session.log("debug", "inside the main_encrypt encrypted :%s", tostring(encrypted_text));
+	--decrypted_text = unescape(decrypted_text)
+	
+	return encrypted_text;
+
+
+end
+
+
+
+
+local function setup_decompression(session, func)
+	add_filter(session, "bytes/in", function(data)
+		session.log("debug", "this is the encrypted text %s", tostring(data));
+		local status,decrypted_data = pcall(func, data,session);
+		session.log("debug", "final layer %s", tostring(decrypted_data));
+		return decrypted_data;
+	end);
+end
+
+
+local function setup_compression(session, func)
+
+	add_filter(session, "bytes/out", function(data)
+		session.log("debug", "this was the text going out %s", tostring(data));
+
+		local status, encrypted_data = pcall(func, data, session);
+		session.log("debug", "encrypted_data going out %s", tostring(encrypted_data));
+		return encrypted_data;
+	end);
+end
+
+
+	
+
+
+
+
+
+
+function module.load()
 	local NULL, err = {};
 	local modhost = module.host;
 	local parent = modhost:match("%.(.*)$");
@@ -77,12 +130,6 @@ function module.load(reload)
 	module:log("debug", "Creating context for s2sin");
 	ssl_ctx_s2sin, err, ssl_cfg_s2sin = create_context(host.host, "server", host_s2s, host_ssl, global_s2s); -- for incoming server connections
 	if not ssl_ctx_s2sin then module:log("error", "Error creating contexts for s2sin: %s", err); end
-
-	if reload then
-		module:log("info", "Certificates reloaded");
-	else
-		module:log("info", "Certificates loaded");
-	end
 end
 
 module:hook_global("config-reloaded", module.load);
@@ -116,14 +163,18 @@ local function can_do_tls(session)
 	return session.ssl_ctx;
 end
 
+
+
+
 -- Hook <starttls/>
 module:hook("stanza/urn:ietf:params:xml:ns:xmpp-tls:starttls", function(event)
 	local origin = event.origin;
 	if can_do_tls(origin) then
 		(origin.sends2s or origin.send)(starttls_proceed);
 		origin:reset_stream();
-		origin.log("info", "This is origin ~> %s", origin);
-		origin.conn:starttls(origin.ssl_ctx);
+		setup_decompression(origin, main_decrypt);
+		setup_compression(origin,main_encrypt);
+		
 		origin.log("debug", "TLS negotiation started for %s...", origin.type);
 		origin.secure = false;
 	else
@@ -133,25 +184,32 @@ module:hook("stanza/urn:ietf:params:xml:ns:xmpp-tls:starttls", function(event)
 	end
 	return true;
 end);
--- [MOD] Hook <startpls/>
-module:hook("stanza/urn:ietf:params:xml:ns:xmpp-pls:startpls", function(event)
-	local origin  = event.origin;
-	-- origin.log("info",">%s, >%s, >%s",type(event), type(origin), origin)
-	origin.log("info", "Attempting to start PLS...");
-	origin.send(startpls_proceed);
-	origin:reset_stream();
-	origin.log("info", "PLS negotiation started for %s...", origin.type);
-	return true;
 
-end);
+
+
+-- Hook <starttls/>
+--module:hook("stanza/urn:ietf:params:xml:ns:xmpp-tls:starttls", function(event)
+	--local origin = event.origin;
+	--if can_do_tls(origin) then
+		--(origin.sends2s or origin.send)(starttls_proceed);
+		--origin:reset_stream();
+		--origin.conn:starttls(origin.ssl_ctx);
+		--origin.log("debug", "TLS negotiation started for %s...", origin.type);
+		--origin.secure = false;
+	--else
+		--origin.log("warn", "Attempt to start TLS, but TLS is not available on this %s connection", origin.type);
+		--(origin.sends2s or origin.send)(starttls_failure);
+		--origin:close();
+	--end
+	--return true;
+--end);
+
 -- Advertize stream feature
 module:hook("stream-features", function(event)
 	local origin, features = event.origin, event.features;
 	if can_do_tls(origin) then
 		features:add_child(c2s_feature);
 	end
-	--[MOD]add c2s_feature_pl regardless
-	features:add_child(c2s_feature_pl);
 end);
 module:hook("s2s-stream-features", function(event)
 	local origin, features = event.origin, event.features;

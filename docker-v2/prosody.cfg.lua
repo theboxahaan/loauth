@@ -21,7 +21,7 @@ daemonize = false;
 -- for the server. Note that you must create the accounts separately
 -- (see https://prosody.im/doc/creating_accounts for info)
 -- Example: admins = { "user1@example.com", "user2@example.net" }
-admins = { "admin@localhost" }
+admins = { "admin@localhost","killua@localhost" }
 
 -- Enable use of libevent for better performance under high load
 -- For more information see: https://prosody.im/doc/libevent
@@ -30,7 +30,7 @@ admins = { "admin@localhost" }
 -- Prosody will always look in its source directory for modules, but
 -- this option allows you to specify additional locations where Prosody
 -- will look for modules first. For community modules, see https://modules.prosody.im/
---plugin_paths = {}
+plugin_paths = {"/usr/local/lib/prosody/modules"}
 
 -- This is the list of modules Prosody will load on startup.
 -- It looks for mod_modulename.lua in the plugins folder, so make sure that exists too.
@@ -41,9 +41,9 @@ modules_enabled = {
 		"roster"; -- Allow users to have a roster. Recommended ;)
 		"saslauth"; -- Authentication for clients and servers. Recommended if you want to log in.
 		"tls"; -- Add support for secure TLS on c2s/s2s connections
-		"pls";
 		"dialback"; -- s2s dialback support
-		"disco"; -- Service discovery
+		"disco";-- Service discovery
+		"pls";
 
 	-- Not essential, but recommended
 		"carbons"; -- Keep multiple clients in sync
@@ -52,7 +52,7 @@ modules_enabled = {
 		"blocklist"; -- Allow users to block communications with other users
 		"vcard4"; -- User profiles (stored in PEP)
 		"vcard_legacy"; -- Conversion between legacy vCard and PEP Avatar, vcard
-		"limits"; -- Enable bandwidth limiting for XMPP connections
+		--"limits"; -- Enable bandwidth limiting for XMPP connections
 
 	-- Nice to have
 		"version"; -- Replies to server version requests
@@ -73,6 +73,7 @@ modules_enabled = {
 		--"http_files"; -- Serve static files from a directory over HTTP
 
 	-- Other specific functionality
+		"posix";
 		--"groups"; -- Shared roster support
 		--"server_contact_info"; -- Publish contact information for this service
 		--"announce"; -- Send announcement to all online users
@@ -104,7 +105,7 @@ c2s_require_encryption = false
 -- Force servers to use encrypted connections? This option will
 -- prevent servers from authenticating unless they are using encryption.
 
-s2s_require_encryption = true
+s2s_require_encryption = false
 
 -- Force certificate authentication for server-to-server connections?
 
@@ -124,17 +125,17 @@ s2s_secure_auth = false
 
 -- Enable rate limits for incoming client and server connections
 
-limits = {
-  c2s = {
-    rate = "10kb/s";
-  };
-  s2sin = {
-    rate = "30kb/s";
-  };
-}
+--limits = {
+  --c2s = {
+    --rate = "10kb/s";
+  --};
+  --s2sin = {
+    --rate = "30kb/s";
+  --};
+--}
 
 -- Required for init scripts and prosodyctl
-pidfile = "/var/run/prosody/prosody.pid"
+pidfile = "/run/prosody/prosody.pid"
 
 -- Select the authentication backend to use. The 'internal' providers
 -- use Prosody's configured data storage to store the authentication data.
@@ -193,6 +194,7 @@ certificates = "certs"
 -- Settings under each VirtualHost entry apply *only* to that host.
 
 VirtualHost "localhost"
+	Component "pubsub.localhost" "pubsub";
 	key = "/etc/prosody/certs/localhost.key";
 	certificate = "/etc/prosody/certs/localhost.crt";
 
@@ -217,3 +219,4 @@ VirtualHost "localhost"
 --
 --Component "gateway.example.com"
 --	component_secret = "password"
+--

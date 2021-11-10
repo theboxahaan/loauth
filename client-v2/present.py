@@ -15,7 +15,7 @@ class PRESENT_CBC(Present):
 		self._msg_list = None
 		self._key = None
 	
-	def encrypt(self, msg_list:bytes=None):
+	def encrypt(self, msg_list:bytes=None, in_hex=True):
 		if isinstance(msg_list, bytes):
 			msg_list = self.msg_to_blocks(msg_list)
 		cipher_list = []
@@ -27,11 +27,15 @@ class PRESENT_CBC(Present):
 
 			cipher_list.append(bytes.fromhex(super().encrypt(_t)))
 		#for i in range(len(cipher_list)):
-		#	cipher_list[i] = binascii.hexlify(cipher_list[i]).decode('utf-8') 
-		return cipher_list
+		#	cipher_list[i] = binascii.hexlify(cipher_list[i]).decode('utf-8')
+		if in_hex:
+			_qs = [binascii.hexlify(i) for i in cipher_list]
+			return b"".join(_qs)
+		else:
+			return cipher_list
 	
 	def decrypt(self, msg_list:bytes=None):
-		if isinstance(msg_list, bytes):
+		if isinstance(msg_list, bytes) or isinstance(msg_list, bytearray):
 			msg_list = self.msg_to_blocks(msg_list)
 		plain_list = []
 		for i in range(len(msg_list)):
