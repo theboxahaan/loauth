@@ -21,7 +21,7 @@ daemonize = false;
 -- for the server. Note that you must create the accounts separately
 -- (see https://prosody.im/doc/creating_accounts for info)
 -- Example: admins = { "user1@example.com", "user2@example.net" }
-admins = { "admin@localhost","killua@localhost" }
+admins = { "admin@localhost","killua@localhost","killua@3.136.106.93"}
 
 -- Enable use of libevent for better performance under high load
 -- For more information see: https://prosody.im/doc/libevent
@@ -193,10 +193,10 @@ certificates = "certs"
 -- You need to add a VirtualHost entry for each domain you wish Prosody to serve.
 -- Settings under each VirtualHost entry apply *only* to that host.
 
-VirtualHost "localhost"
-	Component "pubsub.localhost" "pubsub";
-	key = "/etc/prosody/certs/localhost.key";
-	certificate = "/etc/prosody/certs/localhost.crt";
+VirtualHost "3.136.106.93"
+	Component "pubsub.3.136.106.93" "pubsub";
+	key = "/etc/prosody/certs/'3.136.106.93'.key";
+	certificate = "/etc/prosody/certs/'3.136.106.93'.crt";
 
 --VirtualHost "example.com"
 --	certificate = "/path/to/example.crt"
