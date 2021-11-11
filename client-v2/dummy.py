@@ -4,9 +4,7 @@ from base64 import b64decode as bd
 from base64 import b64encode as be
 import string
 import secrets
-
-HOST = '3.136.106.93'
-PORT = 5222
+import argparse
 
 class SCRAM_SHA1:
 
@@ -72,6 +70,14 @@ class SCRAM_SHA1:
 		return f'{self.client_final_message_without_proof()},p={be(sasl.generate_client_proof()).decode()}'
 
 if __name__ == '__main__':
+
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--host', type=str, default='localhost')
+	parser.add_argument('--port', type=int, default=5222)
+	args = parser.parse_args()
+	HOST = args.host
+	PORT = args.port
+
 	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 		s.connect((HOST,PORT))
 		s.sendall(f'<?xml version="1.0"?><stream:stream to="{HOST}" xml:lang="en" version="1.0" xmlns="jabber:client" xmlns:stream="http://etherx.jabber.org/streams">'.encode())
