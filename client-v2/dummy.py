@@ -1,4 +1,5 @@
 import socket
+from present import PRESENT_CBC
 from base64 import b64decode as bd
 from base64 import b64encode as be
 import string
@@ -78,41 +79,38 @@ if __name__ == '__main__':
 		print(data)
 		# disable encryption for now
 		# and focus on getting SASL to work
-		# s.sendall(b'<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>')
-		# print(s.recv(2048))
 		s.sendall(b'<startpls xmlns="urn:ietf:params:xml:ns:xmpp-pls"/>')
 		print(s.recv(2048))
 		q = f"<stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' xml:lang='en' version='1.0' to='{HOST}'>".encode()
-		from present import PRESENT_CBC
-		import binascii
+		
 		obj = PRESENT_CBC(b'12341234', b'abcdefghij')
+		
 		cipher = obj.encrypt(q)
-		# print(cipher)
-		#_qs = [binascii.hexlify(i) for i in cipher]
-		#s.sendall(b"".join(_qs))
 		s.sendall(cipher)
 		resp = s.recv(2048)
-		_r = b"".join(obj.decrypt(bytes.fromhex(resp.decode())))
-		# s.recv(2048)
+		_r = obj.decrypt(resp)
+
 		# SASL Layer
 		print(_r)
 		sasl = SCRAM_SHA1(user="killua", pwd="123")
 		# send first message 
 		client_first_msg = f'<auth mechanism="SCRAM-SHA-1" xmlns="urn:ietf:params:xml:ns:xmpp-sasl">{be(sasl.client_first_message().encode()).decode()}</auth>'
 		s.sendall(obj.encrypt(client_first_msg.encode()))
+
 		# receive first server message
 		import xml.etree.ElementTree as ET
 		first_server_msg = s.recv(2048)
-		_r = b"".join(obj.decrypt(bytes.fromhex(first_server_msg.decode())))
+		_r = obj.decrypt(first_server_msg)
 		print(f'first server msg> {_r.decode()}')
 		resp_root = ET.fromstring(_r.decode())
 		resp_dict = {k:v for (k,v) in [a.split('=') for a in bd(resp_root.text).decode().split(',')]}
 		sasl._sr, sasl._s, sasl._i = resp_dict['r'], resp_dict['s'], int(resp_dict['i'])
 		client_response = f'<response xmlns="urn:ietf:params:xml:ns:xmpp-sasl">{be(sasl.client_final_message().encode()).decode()}</response>'
 		print(f"client_response> {client_response}")
+
 		s.sendall(obj.encrypt(client_response.encode()))
 		
 		# get server response
 		server_chal_response = s.recv(2048)
-		_r = b"".join(obj.decrypt(bytes.fromhex(server_chal_response.decode())))
+		_r  = obj.decrypt(server_chal_response)
 		print(f'first server msg> {_r.decode()}')

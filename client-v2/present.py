@@ -34,7 +34,9 @@ class PRESENT_CBC(Present):
 		else:
 			return cipher_list
 	
-	def decrypt(self, msg_list:bytes=None):
+	def decrypt(self, msg_list:bytes=None, in_hex=True):
+		if in_hex:
+			msg_list = bytes.fromhex(msg_list.decode())
 		if isinstance(msg_list, bytes) or isinstance(msg_list, bytearray):
 			msg_list = self.msg_to_blocks(msg_list)
 		plain_list = []
@@ -44,16 +46,15 @@ class PRESENT_CBC(Present):
 				plain_list.append(xor(self._IV, bytes.fromhex(_t)))
 			else :
 				plain_list.append(xor(bytes.fromhex(_t), msg_list[i-1]))
-		return plain_list
+		return b"".join(plain_list)
 	
-	def msg_to_blocks(self, msg:bytes=None, debug=True):
+	def msg_to_blocks(self, msg:bytes=None, debug=False):
 		# zero pad message to a multiple of 64 bits/8 bytes
 		while len(msg) % 8 != 0:
 			msg += b'0'
 		msg_block = [msg[8*i:8*(i+1)] for i in range(0, len(msg)//8)]
 		if debug:
-			# print(f':. blocked msg> {msg_block}')
-			pass
+			print(f':. blocked msg> {msg_block}')
 		return msg_block	
 
 
