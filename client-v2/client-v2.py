@@ -120,3 +120,44 @@ if __name__ == '__main__':
 		server_chal_response = s.recv(2048)
 		_r  = obj.decrypt(server_chal_response)
 		print(f'first server msg> {_r.decode()}')
+
+		c_2 = f"<?xml version='1.0'?><stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' xml:lang='en' version='1.0' to='{HOST}'>"
+
+		s.sendall(obj.encrypt(c_2.encode()))
+
+		s_2 = s.recv(2048)
+		s_2 = obj.decrypt(s_2)
+		s_2 = s_2.decode(encoding='windows-1252')
+
+		print(s_2)
+
+		c_bind_req = f"<iq type='set' id='bind_1'><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'><resource>work</resource></bind></iq>"
+		s.sendall(obj.encrypt(c_bind_req.encode()))
+
+		s_bind_res = s.recv(2048)
+		s_bind_res = obj.decrypt(s_bind_res).decode()
+		print(s_bind_res)
+
+		#below is create nodes req, commented because already created the node princely_musings will not run again and again
+
+		# c_create_node_req = f"<iq type='set' from='killua@{HOST}/work' to='pubsub.{HOST}' id='create1'> <pubsub xmlns='http://jabber.org/protocol/pubsub'> <create node='princely_musings'/> </pubsub> </iq>"
+
+	
+		# print(c_create_node_req)
+		# s.sendall(obj.encrypt(c_create_node_req.encode()))
+
+		# s_cn_res = s.recv(2048)
+		# s_cn_res = obj.decrypt(s_cn_res).decode(encoding='windows-1252')
+		# print(s_cn_res)
+
+		c_get_node = f"<iq type='get' from='killua@{HOST}/work' to='pubsub.{HOST}' id='feature1'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>"
+		s.sendall(obj.encrypt(c_get_node.encode()))
+
+		s_gn_res = s.recv(2048)
+		s_gn_res = obj.decrypt(s_gn_res).decode(encoding='windows-1252')
+		print(s_gn_res)
+
+
+
+
+
