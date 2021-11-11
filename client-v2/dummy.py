@@ -4,7 +4,7 @@ from base64 import b64encode as be
 import string
 import secrets
 
-HOST = '127.0.0.1'
+HOST = '3.136.106.93'
 PORT = 5222
 
 class SCRAM_SHA1:
@@ -73,7 +73,7 @@ class SCRAM_SHA1:
 if __name__ == '__main__':
 	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 		s.connect((HOST,PORT))
-		s.sendall(b'<?xml version="1.0"?><stream:stream to="localhost" xml:lang="en" version="1.0" xmlns="jabber:client" xmlns:stream="http://etherx.jabber.org/streams">')
+		s.sendall(f'<?xml version="1.0"?><stream:stream to="{HOST}" xml:lang="en" version="1.0" xmlns="jabber:client" xmlns:stream="http://etherx.jabber.org/streams">'.encode())
 		data = s.recv(2048)
 		print(data)
 		# disable encryption for now
@@ -82,7 +82,7 @@ if __name__ == '__main__':
 		# print(s.recv(2048))
 		s.sendall(b'<startpls xmlns="urn:ietf:params:xml:ns:xmpp-pls"/>')
 		print(s.recv(2048))
-		q = b"<stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' xml:lang='en' version='1.0' to='localhost'>"
+		q = f"<stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' xml:lang='en' version='1.0' to='{HOST}'>".encode()
 		from present import PRESENT_CBC
 		import binascii
 		obj = PRESENT_CBC(b'12341234', b'abcdefghij')
