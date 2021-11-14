@@ -74,9 +74,16 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--host', type=str, default='localhost')
 	parser.add_argument('--port', type=int, default=5222)
+	parser.add_argument('--user', type = str, default = "killua")
+	parser.add_argument('--passwd', type = str, default = "123")
+	parser.add_argument('--service', type = str ) #pub or sub
+
+
 	args = parser.parse_args()
 	HOST = args.host
 	PORT = args.port
+	USER = args.user
+	PASS = args.passwd
 
 	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 		s.connect((HOST,PORT))
@@ -98,7 +105,7 @@ if __name__ == '__main__':
 
 		# SASL Layer
 		print(_r)
-		sasl = SCRAM_SHA1(user="killua", pwd="123")
+		sasl = SCRAM_SHA1(user=USER, pwd=PASS)
 		# send first message 
 		client_first_msg = f'<auth mechanism="SCRAM-SHA-1" xmlns="urn:ietf:params:xml:ns:xmpp-sasl">{be(sasl.client_first_message().encode()).decode()}</auth>'
 		s.sendall(obj.encrypt(client_first_msg.encode()))
@@ -140,22 +147,119 @@ if __name__ == '__main__':
 
 		#below is create nodes req, commented because already created the node princely_musings will not run again and again
 
-		# c_create_node_req = f"<iq type='set' from='killua@{HOST}/work' to='pubsub.{HOST}' id='create1'> <pubsub xmlns='http://jabber.org/protocol/pubsub'> <create node='princely_musings'/> </pubsub> </iq>"
+		c_create_node_req = f"<iq type='set' from='killua@{HOST}/work' to='pubsub.{HOST}' id='create1'> <pubsub xmlns='http://jabber.org/protocol/pubsub'> <create node='princely_musings'/> </pubsub> </iq>"
 
 	
-		# print(c_create_node_req)
-		# s.sendall(obj.encrypt(c_create_node_req.encode()))
+		print(c_create_node_req)
+		s.sendall(obj.encrypt(c_create_node_req.encode()))
 
-		# s_cn_res = s.recv(2048)
-		# s_cn_res = obj.decrypt(s_cn_res).decode(encoding='windows-1252')
-		# print(s_cn_res)
+		s_cn_res = s.recv(2048)
+		s_cn_res = obj.decrypt(s_cn_res).decode(encoding='windows-1252')
+		print(s_cn_res)
 
-		c_get_node = f"<iq type='get' from='killua@{HOST}/work' to='pubsub.{HOST}' id='feature1'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>"
-		s.sendall(obj.encrypt(c_get_node.encode()))
+		if args.service == "pub":
 
-		s_gn_res = s.recv(2048)
-		s_gn_res = obj.decrypt(s_gn_res).decode(encoding='windows-1252')
-		print(s_gn_res)
+			N = 15
+			M = 20
+			res_1 = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for i in range(N))
+			res_2 = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for i in range(M))
+
+			c_pub_st = f"<iq type='set' from= '{USER}@{HOST}/work' to='pubsub.{HOST}' id='{res_1}'> <pubsub xmlns='http://jabber.org/protocol/pubsub'> <publish node='princely_musings'> <item id='{res_2}'> <entry xmlns='http://www.w3.org/2005/Atom'> <title>Harry potter </title> <summary> Avada Kedavra </summary> </entry> </item> </publish> </pubsub> </iq>"
+
+			# print(c_pub_st)
+
+			s.sendall(obj.encrypt(c_pub_st.encode()))
+
+			s_pub_recv = s.recv(2048)
+
+			# while (True):
+
+			# 	s_pub_recv = s.recv(2048)
+
+			# 	if s_pub_recv == None :
+			# 		continue
+
+			# 	# print("hello",s_pub_recv)
+
+			# 	break		
+
+
+			s_pub_recv = obj.decrypt(s_pub_recv).decode(encoding='windows-1252')
+
+			print(s_pub_recv)
+
+
+			s_wait_2 = s.recv(2048)
+			s_wait_2 = obj.decrypt(s_wait_2).decode(encoding='windows-1252')
+
+			print(s_wait_2)
+
+
+		if args.service == "sub":
+
+			N = 10
+			res_1 = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for i in range(N))
+
+
+			c_sub_st = f"<iq type='set' from='{USER}@{HOST}/work' to='pubsub.{HOST}' id='{res_1}' > <pubsub xmlns='http://jabber.org/protocol/pubsub'> <subscribe node='princely_musings' jid='{USER}@{HOST}'/> </pubsub> </iq>"
+
+			s.sendall(obj.encrypt(c_sub_st.encode()))
+
+			s_sub_recv = s.recv(2048)
+			s_sub_recv = obj.decrypt(s_sub_recv).decode(encoding='windows-1252')
+
+			print(s_sub_recv)
+
+			# s_wait = None
+			s_wait = s.recv(2048)
+
+			# while (True):
+
+			# 	s_wait = s.recv(2048)
+
+			# 	if s_wait == None:
+			# 		continue
+
+			# 	print("hellooo",s_wait)
+
+			# 	break
+
+			s_wait = obj.decrypt(s_wait).decode(encoding='windows-1252')
+			print(s_wait)
+
+
+
+
+		#check all subscriptions 
+
+		c_get_sub = f"<iq type='get' from='{USER}@{HOST}/work' to='pubsub.{HOST}' id='subscriptions1'> <pubsub xmlns='http://jabber.org/protocol/pubsub'> <subscriptions/> </pubsub> </iq>"
+		s.sendall(obj.encrypt(c_get_sub.encode()))
+
+		s_recv_sub = s.recv(2048)
+		s_recv_sub = obj.decrypt(s_recv_sub).decode(encoding='windows-1252')
+		print(s_recv_sub)
+
+		#retrieve items from the node princely_musings
+
+
+		c_get_items = f"<iq type='get' from='{USER}@{HOST}/work' to='pubsub.{HOST}' id='items1'> <pubsub xmlns='http://jabber.org/protocol/pubsub'> <items node='princely_musings'/> </pubsub> </iq>"
+		s.sendall(obj.encrypt(c_get_items.encode()))
+
+		s_recv_items = s.recv(2048)
+		s_recv_items = obj.decrypt(s_recv_items).decode(encoding='windows-1252')
+		print(s_recv_items)
+
+
+
+
+
+
+		# c_get_node = f"<iq type='get' from='{USER}@{HOST}/work' to='pubsub.{HOST}' id='feature1'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>"
+		# s.sendall(obj.encrypt(c_get_node.encode()))
+
+		# s_gn_res = s.recv(2048)
+		# s_gn_res = obj.decrypt(s_gn_res).decode(encoding='windows-1252')
+		# print(s_gn_res)
 
 
 
