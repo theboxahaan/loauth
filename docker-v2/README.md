@@ -27,8 +27,9 @@ $ docker exec -it prosody bash
 ```bash
 $ telnet localhost 5582
 
-# add user 
-> user:create("admin@localhost","123")
+# add user
+> user:create("<user_name>@<domain_name>","<pass>")
+> user:create("killua@3.136.106.93","123")  #3.136.106.93 is the domain_name of the server, here it is the IP of the aws instance.
 ```
 
 ## Using `client-v2`
